@@ -57,7 +57,7 @@ Check the update of %s and its commands.
 				selfUpdater.CheckUpdateAsync()
 				err := selfUpdater.Update()
 				if err != nil {
-					console.Error(err.Error())
+					console.Error("%s", err)
 				} else {
 					console.Success("%s is up-to-date", appCtx.AppName())
 				}
@@ -83,7 +83,7 @@ Check the update of %s and its commands.
 				cmdUpdater.CheckUpdateAsync()
 				err := cmdUpdater.Update()
 				if err != nil {
-					console.Error(err.Error())
+					console.Error("%s", err)
 				} else {
 					console.Success("packages in 'default' repository are up-to-date")
 				}
@@ -99,7 +99,7 @@ Check the update of %s and its commands.
 						updater.CheckUpdateAsync()
 						err := updater.Update()
 						if err != nil {
-							console.Error(err.Error())
+							console.Error("%s", err)
 						} else {
 							console.Success("packages in '%s' repository are up-to-date", source.Name)
 						}
