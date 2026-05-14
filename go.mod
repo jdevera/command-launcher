@@ -1,4 +1,4 @@
-module github.com/criteo/command-launcher
+module github.com/jdevera/command-launcher
 
 go 1.23.0
 

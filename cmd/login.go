@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/context"
-	"github.com/criteo/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/helper"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 

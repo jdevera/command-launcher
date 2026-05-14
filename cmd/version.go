@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/context"
 	"github.com/spf13/cobra"
 )
 

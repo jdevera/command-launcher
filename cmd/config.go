@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/criteo/command-launcher/internal/config"
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/context"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

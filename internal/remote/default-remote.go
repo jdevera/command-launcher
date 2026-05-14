@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/helper"
-	"github.com/criteo/command-launcher/internal/pkg"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/pkg"
 	log "github.com/sirupsen/logrus"
 )
 

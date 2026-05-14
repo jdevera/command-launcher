@@ -8,10 +8,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/config"
-	"github.com/criteo/command-launcher/internal/pkg"
-	"github.com/criteo/command-launcher/internal/updateConfig"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/pkg"
+	"github.com/jdevera/command-launcher/internal/updateConfig"
 	"github.com/spf13/viper"
 )
 

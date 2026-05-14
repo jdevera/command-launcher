@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/helper"
-	"github.com/criteo/command-launcher/internal/remote"
-	"github.com/criteo/command-launcher/internal/repository"
-	"github.com/criteo/command-launcher/internal/user"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/remote"
+	"github.com/jdevera/command-launcher/internal/repository"
+	"github.com/jdevera/command-launcher/internal/user"
 
 	log "github.com/sirupsen/logrus"
 )

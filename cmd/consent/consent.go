@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/config"
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/helper"
 	"github.com/spf13/viper"
 )
 

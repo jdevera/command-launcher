@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/criteo/command-launcher/internal/command"
+import "github.com/jdevera/command-launcher/internal/command"
 
 type RepoIndex interface {
 	/* write interfaces */

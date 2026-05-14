@@ -1,7 +1,7 @@
 package main
 
 import (
-	root "github.com/criteo/command-launcher/cmd"
+	root "github.com/jdevera/command-launcher/cmd"
 )
 
 // Initialized by the linker option (-X main.version=xxxx), this is the build number

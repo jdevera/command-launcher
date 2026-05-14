@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/criteo/command-launcher/cmd/completion"
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/cmd/completion"
+	"github.com/jdevera/command-launcher/internal/context"
 	"github.com/spf13/cobra"
 )
 

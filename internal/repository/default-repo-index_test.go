@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/criteo/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/command"
 	"github.com/stretchr/testify/assert"
 )
 

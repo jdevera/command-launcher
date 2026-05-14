@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/criteo/command-launcher/cmd/consent"
-	"github.com/criteo/command-launcher/internal/backend"
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/config"
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/context"
-	"github.com/criteo/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/cmd/consent"
+	"github.com/jdevera/command-launcher/internal/backend"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/helper"
 
 	log "github.com/sirupsen/logrus"
 

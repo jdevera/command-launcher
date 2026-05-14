@@ -3,8 +3,8 @@ package helper
 import (
 	"runtime"
 
-	"github.com/criteo/command-launcher/internal/context"
-	vault "github.com/criteo/command-launcher/internal/gvault"
+	"github.com/jdevera/command-launcher/internal/context"
+	vault "github.com/jdevera/command-launcher/internal/gvault"
 	log "github.com/sirupsen/logrus"
 	"github.com/zalando/go-keyring"
 )

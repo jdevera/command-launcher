@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/context"
 	log "github.com/sirupsen/logrus"
 )
 
