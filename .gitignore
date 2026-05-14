@@ -14,3 +14,4 @@ node_modules
 test/metrics.txt
 cdt
 .claude/
+.local/
