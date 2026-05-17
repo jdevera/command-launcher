@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/criteo/command-launcher/internal/backend"
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/backend"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/context"
 	"github.com/spf13/cobra"
 )
 

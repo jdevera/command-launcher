@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/helper"
-	"github.com/criteo/command-launcher/internal/user"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/user"
 	"github.com/inconshreveable/go-update"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -88,7 +88,7 @@ func (u *SelfUpdater) checkSelfUpdate() <-chan bool {
 	go func() {
 		data, err := helper.LoadFile(u.LatestVersionUrl)
 		if err != nil {
-			log.Infof(err.Error())
+			log.Info(err.Error())
 			ch <- false
 			return
 		}
@@ -97,7 +97,7 @@ func (u *SelfUpdater) checkSelfUpdate() <-chan bool {
 		// YAML is a supper set of json, should work with JSON as well.
 		err = yaml.Unmarshal(data, &u.latestVersion)
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Error(err.Error())
 			ch <- false
 			return
 		}
@@ -138,7 +138,7 @@ func (u *SelfUpdater) downloadUrl(version string) (string, error) {
 	}
 
 	// the download url convention: [self_update_base_url]/[version]/[binaryName]_[OS]_[ARCH]_[version][extension]
-	// Example: https://github.com/criteo/command-launcher/releases/download/1.6.0/cdt_darwin_arm64_1.6.0"
+	// Example: https://github.com/jdevera/command-launcher/releases/download/1.6.0/cdt_darwin_arm64_1.6.0"
 	updateUrl.Path = path.Join(updateUrl.Path, version, u.binaryFileName(version))
 	return updateUrl.String(), nil
 }

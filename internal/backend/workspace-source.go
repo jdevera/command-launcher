@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/criteo/command-launcher/internal/repository"
+	"github.com/jdevera/command-launcher/internal/repository"
 )
 
 const WorkspaceSourcePrefix = "workspace:"

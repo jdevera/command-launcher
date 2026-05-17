@@ -7,8 +7,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/pkg"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/pkg"
 )
 
 // workspaceRepoIndex implements RepoIndex for workspace packages.

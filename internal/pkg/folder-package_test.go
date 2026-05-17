@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/criteo/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/config"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

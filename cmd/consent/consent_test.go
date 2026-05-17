@@ -3,7 +3,7 @@ package consent
 import (
 	"testing"
 
-	"github.com/criteo/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/context"
 	"github.com/stretchr/testify/assert"
 )
 

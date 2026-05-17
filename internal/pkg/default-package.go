@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/criteo/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/command"
 	"gopkg.in/yaml.v3"
 )
 

@@ -4,7 +4,6 @@ dist/
 build/
 .DS_Store
 command-launcher
-go.sum
 .idea/
 .cdt/
 cdt.json
@@ -14,3 +13,4 @@ node_modules
 test/metrics.txt
 cdt
 .claude/
+.local/

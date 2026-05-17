@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/console"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

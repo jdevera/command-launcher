@@ -1,8 +1,8 @@
 package backend
 
 import (
-	"github.com/criteo/command-launcher/internal/command"
-	"github.com/criteo/command-launcher/internal/repository"
+	"github.com/jdevera/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/repository"
 )
 
 var RESERVED_CMD_SEARCH_KEY map[string]bool = map[string]bool{

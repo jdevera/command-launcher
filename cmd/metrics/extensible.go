@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/command"
+	"github.com/jdevera/command-launcher/internal/command"
 )
 
 type extensibleMetrics struct {

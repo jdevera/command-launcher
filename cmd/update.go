@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/backend"
-	"github.com/criteo/command-launcher/internal/config"
-	"github.com/criteo/command-launcher/internal/console"
-	"github.com/criteo/command-launcher/internal/context"
-	"github.com/criteo/command-launcher/internal/repository"
-	"github.com/criteo/command-launcher/internal/updater"
-	"github.com/criteo/command-launcher/internal/user"
+	"github.com/jdevera/command-launcher/internal/backend"
+	"github.com/jdevera/command-launcher/internal/config"
+	"github.com/jdevera/command-launcher/internal/console"
+	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/repository"
+	"github.com/jdevera/command-launcher/internal/updater"
+	"github.com/jdevera/command-launcher/internal/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -57,7 +57,7 @@ Check the update of %s and its commands.
 				selfUpdater.CheckUpdateAsync()
 				err := selfUpdater.Update()
 				if err != nil {
-					console.Error(err.Error())
+					console.Error("%s", err)
 				} else {
 					console.Success("%s is up-to-date", appCtx.AppName())
 				}
@@ -83,7 +83,7 @@ Check the update of %s and its commands.
 				cmdUpdater.CheckUpdateAsync()
 				err := cmdUpdater.Update()
 				if err != nil {
-					console.Error(err.Error())
+					console.Error("%s", err)
 				} else {
 					console.Success("packages in 'default' repository are up-to-date")
 				}
@@ -99,7 +99,7 @@ Check the update of %s and its commands.
 						updater.CheckUpdateAsync()
 						err := updater.Update()
 						if err != nil {
-							console.Error(err.Error())
+							console.Error("%s", err)
 						} else {
 							console.Success("packages in '%s' repository are up-to-date", source.Name)
 						}

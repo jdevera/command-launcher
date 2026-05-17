@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/criteo/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/helper"
 	log "github.com/sirupsen/logrus"
 )
 

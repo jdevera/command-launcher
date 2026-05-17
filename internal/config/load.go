@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/criteo/command-launcher/internal/context"
-	"github.com/criteo/command-launcher/internal/helper"
+	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/helper"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
