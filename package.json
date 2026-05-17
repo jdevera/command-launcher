@@ -2,7 +2,7 @@
   "name": "@criteo/command-launcher",
   "description": "A command launcher 🚀 made with ❤️",
   "scripts": {
-    "prepare": "husky install && npm install --prefix ./gh-pages"
+    "prepare": "husky && npm install --prefix ./gh-pages"
   },
   "repository": {
     "type": "git",
@@ -13,6 +13,6 @@
   },
   "homepage": "https://criteo.github.io/command-launcher/",
   "devDependencies": {
-    "husky": "^8.0.0"
+    "husky": "^9.1.7"
   }
 }
