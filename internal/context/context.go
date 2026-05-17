@@ -29,6 +29,10 @@ type LauncherContext interface {
 
 	FullCmdNameEnvVar() string
 
+	VaultSecretEnvVar() string
+
+	VaultSecretFileEnvVar() string
+
 	/* General function to get a environment variable name with prefix conventions */
 	EnvVarName(name string) string
 }

@@ -86,6 +86,14 @@ func (ctx *defaultContext) FullCmdNameEnvVar() string {
 	return ctx.EnvVarName("FULL_COMMAND_NAME")
 }
 
+func (ctx *defaultContext) VaultSecretEnvVar() string {
+	return ctx.EnvVarName("VAULT_SECRET")
+}
+
+func (ctx *defaultContext) VaultSecretFileEnvVar() string {
+	return ctx.EnvVarName("VAULT_SECRET_FILE")
+}
+
 func (ctx *defaultContext) EnvVarName(name string) string {
 	return fmt.Sprintf("%s_%s", ctx.prefix(), name)
 }
