@@ -60,7 +60,6 @@ jobs:
         CGO_ENABLED: ${{matrix.cgo}}
       shell: bash
       run: |
-        ./build.sh -v ${{github.ref_name}} -b ${{github.run_number}} -n cdt -l "Criteo Dev Toolkit" -o build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
         ./build.sh -v ${{github.ref_name}} -b ${{github.run_number}} -n cola -l "Command Launcher" -o build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
 
     - name: Test & Benchmark
@@ -75,13 +74,7 @@ jobs:
     - name: documentation lint
       run: cd gh-pages && npm install && npm run test
 
-    - name: Upload CDT
-      uses: actions/upload-artifact@v7
-      with:
-        name: ${{steps.vars.outputs.os}}-cdt-${{matrix.arch}}
-        path: build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
-
-    - name: Upload COLA
+    - name: Upload binary
       uses: actions/upload-artifact@v7
       with:
         name: ${{steps.vars.outputs.os}}-cola-${{matrix.arch}}
@@ -90,7 +83,6 @@ jobs:
     - name: Rename binary name for release
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        mv build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}} build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
         mv build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}} build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
 
     - name: Release
@@ -98,7 +90,6 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
           build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
 
   packaging:
@@ -108,43 +99,43 @@ jobs:
       - name: Download linux amd64 artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-cdt-amd64
+          name: linux-cola-amd64
           path: output/linux/amd64/
       - name: Download linux arm64 artifact
         uses: actions/download-artifact@v8
         with:
-          name: linux-cdt-arm64
+          name: linux-cola-arm64
           path: output/linux/arm64/
       - name: Download windows amd64 artifact
         uses: actions/download-artifact@v8
         with:
-          name: windows-cdt-amd64
+          name: windows-cola-amd64
           path: output/windows/amd64/
       - name: Download darwin amd64 artifact
         uses: actions/download-artifact@v8
         with:
-          name: darwin-cdt-amd64
+          name: darwin-cola-amd64
           path: output/darwin/amd64/
       - name: Download darwin-arm64 artifact
         uses: actions/download-artifact@v8
         with:
-          name: darwin-cdt-arm64
+          name: darwin-cola-arm64
           path: output/darwin/arm64/
 
       - name: Rename binary name
         run: |
-          mv output/darwin/arm64/cdt_darwin_arm64_${{needs.build.outputs.sha_short}} output/darwin/arm64/cdt
-          mv output/darwin/amd64/cdt_darwin_amd64_${{needs.build.outputs.sha_short}} output/darwin/amd64/cdt
-          mv output/linux/amd64/cdt_linux_amd64_${{needs.build.outputs.sha_short}} output/linux/amd64/cdt
-          mv output/linux/arm64/cdt_linux_arm64_${{needs.build.outputs.sha_short}} output/linux/arm64/cdt
-          mv output/windows/amd64/cdt_windows_amd64_${{needs.build.outputs.sha_short}} output/windows/amd64/cdt.exe
+          mv output/darwin/arm64/cola_darwin_arm64_${{needs.build.outputs.sha_short}} output/darwin/arm64/cola
+          mv output/darwin/amd64/cola_darwin_amd64_${{needs.build.outputs.sha_short}} output/darwin/amd64/cola
+          mv output/linux/amd64/cola_linux_amd64_${{needs.build.outputs.sha_short}} output/linux/amd64/cola
+          mv output/linux/arm64/cola_linux_arm64_${{needs.build.outputs.sha_short}} output/linux/arm64/cola
+          mv output/windows/amd64/cola_windows_amd64_${{needs.build.outputs.sha_short}} output/windows/amd64/cola.exe
 
       - name: Zip the package
         uses: thedoctor0/zip-release@0.7.6
         if: startsWith(github.ref, 'refs/tags/')
         with:
           type: 'zip'
-          filename: cdt_${{github.ref_name}}.zip
+          filename: cola_${{github.ref_name}}.zip
           directory: output
 
       - name: Upload
@@ -152,7 +143,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: all-in-one.zip
-          path: output/cdt_${{github.ref_name}}.zip
+          path: output/cola_${{github.ref_name}}.zip
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -162,7 +153,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: output/cdt_${{github.ref_name}}.zip
+          files: output/cola_${{github.ref_name}}.zip
 
 
   update-latest-version:
