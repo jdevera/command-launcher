@@ -3,8 +3,8 @@
 DEBUG=0
 
 # Default values
-DEFAULT_APP_NAME="cdt"
-DEFAULT_APP_LONG_NAME="Criteo Dev Toolkit"
+DEFAULT_APP_NAME="cola"
+DEFAULT_APP_LONG_NAME="Command Launcher"
 
 default_version() {
     echo "$(git rev-parse --abbrev-ref HEAD)-dev"
