@@ -25,6 +25,9 @@ go build -o $OUTPUT_DIR/cl -ldflags='-X main.version=integration-test -X main.bu
 # specify the app home
 export CL_HOME=$OUTPUT_DIR/home
 
+# unlock the file vault without depending on ~/.ssh existing (CI runners don't have one)
+export CL_VAULT_SECRET=very_secret
+
 if [ $# -ne 0 ]; then
   # in case pass test as arguments, run test from the arguments
   for test in "$@"; do
