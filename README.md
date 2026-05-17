@@ -2,7 +2,16 @@
 
 A command launcher 🚀 made with ❤️
 
-[https://criteo.github.io/command-launcher/](https://criteo.github.io/command-launcher/)
+[https://jdevera.github.io/command-launcher/](https://jdevera.github.io/command-launcher/)
+
+## About this fork
+
+This is a personal fork of [criteo/command-launcher](https://github.com/criteo/command-launcher), maintained for homelab use. I remain hugely grateful for the original project and still love the tool — the architecture is exactly what I want for a personal CLI hub. The fork exists for two reasons specific to my situation:
+
+- **Different needs.** As a homelabber rather than a company, the tradeoffs in features and defaults that work for Criteo aren't always the right ones for a single user running this on their own machines.
+- **Different cadence.** I work on this in my own time, not company time. Upstream review and merge cycles are slower than I can iterate at, and some of the PRs I'd send may not align with the direction Criteo wants for their tool.
+
+Net: forking lets me move faster on changes that matter for my use case without pulling on a maintainer's time. Changes that might suit both audiences will still go to upstream as PRs; the rest live here.
 
 ## Why a command launcher?
 
