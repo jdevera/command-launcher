@@ -3,6 +3,8 @@ package helper
 import (
 	"os"
 	"strings"
+
+	"github.com/jdevera/command-launcher/internal/context"
 )
 
 const (
@@ -13,15 +15,23 @@ const (
 )
 
 type DebugFlags struct {
-	ForceSelfUpdate    bool // Force the self update of the CDT
+	ForceSelfUpdate    bool // Force the self update of the launcher
 	NoMergeStatusCheck bool // do not check merge status when querying merged changes in gerrit
 	ShowCmdExecStdout  bool // always show cmd exec stdout to console
 	UseFileVault       bool // use file vault instead of system vault
 }
 
+func debugFlagsString() string {
+	ctx, err := context.AppContext()
+	if err != nil {
+		return ""
+	}
+	return os.Getenv(ctx.DebugFlagsEnvVar())
+}
+
 // load all debug flags into DebugFlags struct
 func LoadDebugFlags() DebugFlags {
-	flagsString := os.Getenv("CDT_DEBUG_FLAGS")
+	flagsString := debugFlagsString()
 	flags := strings.Split(flagsString, ",")
 	debugFlags := DebugFlags{}
 	for _, flag := range flags {
@@ -41,7 +51,7 @@ func LoadDebugFlags() DebugFlags {
 
 // check if a debug flag exists
 func HasDebugFlag(name string) bool {
-	flagsString := os.Getenv("CDT_DEBUG_FLAGS")
+	flagsString := debugFlagsString()
 	if flagsString == "" {
 		return false
 	}
