@@ -1,3 +1,23 @@
+1.16.0:
+  version: 1.16.0
+  releaseNotes: |
+    First release of this fork of [criteo/command-launcher](https://github.com/criteo/command-launcher).
+    See the project README for context on why the fork exists.
+
+    # ✨ New Features
+      * **Runtime binary name.** Rename or copy the binary and the app identity follows the filename. Symlinks resolve to the original identity (shared config); copies become independent instances with their own config dir. `app_long_name` config key sets the display name without recompiling. (Upstream PR #195)
+      * **Named flags in `build.sh`.** `-v VERSION -n NAME -l LONG_NAME -o OUTPUT -b BUILD_NUMBER -r/--resign`. Legacy positional form still works. (Upstream PR #192)
+
+    # 📝 Documentation
+      * Fixed the Graphite metric path described in the provider guide (was off in segment count and metric leaves). (Upstream PR #198)
+
+    # 🔒️ Under the hood
+      * Go toolchain bumped to 1.26.3; `logrus`, `x/crypto`, and other deps bumped to latest. `govulncheck` reports no known vulnerabilities.
+      * Pre-existing latent format-string bugs in the update command path fixed.
+      * Module path renamed to github.com/jdevera/command-launcher.
+  startPartition: 0
+  endPartition: 9
+
 1.15.1:
   version: 1.15.1
   releaseNotes: |
