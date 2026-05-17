@@ -1,15 +1,15 @@
 {
-  "name": "@criteo/command-launcher",
+  "name": "command-launcher",
   "description": "A command launcher 🚀 made with ❤️",
   "scripts": {
     "prepare": "husky && npm install --prefix ./gh-pages"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/criteo/command-launcher.git"
+    "url": "git+https://github.com/jdevera/command-launcher.git"
   },
   "bugs": {
-    "url": "https://github.com/criteo/command-launcher/issues"
+    "url": "https://github.com/jdevera/command-launcher/issues"
   },
   "homepage": "https://criteo.github.io/command-launcher/",
   "devDependencies": {
