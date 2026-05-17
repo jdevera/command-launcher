@@ -4,7 +4,6 @@ dist/
 build/
 .DS_Store
 command-launcher
-go.sum
 .idea/
 .cdt/
 cdt.json
