@@ -31,27 +31,28 @@ jobs:
             cgo: 1
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v6
       with:
-        go-version: 1.22
+        go-version: 1.26.3
 
     - name: Set up Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
-        node-version: '16'
+        node-version: '24'
         cache: 'npm'
         cache-dependency-path: gh-pages/package-lock.json
 
     - name: generate vars
       id: vars
+      shell: bash
       run: |
-        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-        echo "::set-output name=arch::${{matrix.arch}}"
-        echo "::set-output name=os::$(go run test/get-os.go)"
-        echo "::set-output name=ext::$(go run test/get-os.go extension)"
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "arch=${{matrix.arch}}" >> $GITHUB_OUTPUT
+        echo "os=$(go run test/get-os.go)" >> $GITHUB_OUTPUT
+        echo "ext=$(go run test/get-os.go extension)" >> $GITHUB_OUTPUT
 
     - name: Build
       env:
@@ -75,13 +76,13 @@ jobs:
       run: cd gh-pages && npm install && npm run test
 
     - name: Upload CDT
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{steps.vars.outputs.os}}-cdt-${{matrix.arch}}
         path: build/cdt_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
 
     - name: Upload COLA
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{steps.vars.outputs.os}}-cola-${{matrix.arch}}
         path: build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
@@ -93,7 +94,7 @@ jobs:
         mv build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}} build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
 
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
@@ -105,27 +106,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download linux amd64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-cdt-amd64
           path: output/linux/amd64/
       - name: Download linux arm64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-cdt-arm64
           path: output/linux/arm64/
       - name: Download windows amd64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-cdt-amd64
           path: output/windows/amd64/
       - name: Download darwin amd64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: darwin-cdt-amd64
           path: output/darwin/amd64/
       - name: Download darwin-arm64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: darwin-cdt-arm64
           path: output/darwin/arm64/
@@ -147,7 +148,7 @@ jobs:
           directory: output
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: all-in-one.zip
@@ -158,7 +159,7 @@ jobs:
         working-directory: output
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: output/cdt_${{github.ref_name}}.zip
@@ -168,7 +169,7 @@ jobs:
     needs: [ packaging ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Generate latest version file
         run: |
@@ -179,13 +180,13 @@ jobs:
         run: cat output/latest.yaml
 
       - name: Upload latest version index
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: latest.yaml
           path: output/latest.yaml
 
       - name: Release & Update the version index
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: output/latest.yaml
