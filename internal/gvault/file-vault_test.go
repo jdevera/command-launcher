@@ -3,10 +3,18 @@ package vault
 import (
 	"fmt"
 	"testing"
+
+	"github.com/jdevera/command-launcher/internal/context"
 )
 
+func init() {
+	context.InitContext("testvault", "1.0.0", "1")
+}
+
+const vaultSecretEnv = "TESTVAULT_VAULT_SECRET"
+
 func TestVault_Init(t *testing.T) {
-	t.Setenv("CDT_VAULT_SECRET", "very_secret")
+	t.Setenv(vaultSecretEnv, "very_secret")
 
 	_, err := CreateVault("unit-test")
 	if err != nil {
@@ -15,7 +23,7 @@ func TestVault_Init(t *testing.T) {
 }
 
 func TestVault_WriteRead(t *testing.T) {
-	t.Setenv("CDT_VAULT_SECRET", "very_secret")
+	t.Setenv(vaultSecretEnv, "very_secret")
 
 	fv, err := CreateVault("unit-test")
 	if err != nil {
@@ -38,7 +46,7 @@ func TestVault_WriteRead(t *testing.T) {
 }
 
 func TestVault_MultiWriteRead(t *testing.T) {
-	t.Setenv("CDT_VAULT_SECRET", "very_secret")
+	t.Setenv(vaultSecretEnv, "very_secret")
 
 	fv, err := CreateVault("unit-test")
 	if err != nil {

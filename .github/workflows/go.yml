@@ -7,9 +7,6 @@ on:
   pull_request:
     branches: [ 'main', 'v*.*.*', 'remote-registry' ]
 
-env:
-  CDT_VAULT_SECRET: very_secret
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}

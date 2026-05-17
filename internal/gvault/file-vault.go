@@ -11,6 +11,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/jdevera/command-launcher/internal/context"
 )
 
 type Dico map[string]string
@@ -153,8 +155,13 @@ func (fv *FileVault) encrypt(data []byte) ([]byte, error) {
 }
 
 func readSecret() ([]byte, error) {
+	ctx, err := context.AppContext()
+	if err != nil {
+		return []byte{}, err
+	}
+
 	// first get the secret from environment variable
-	secret := os.Getenv("CDT_VAULT_SECRET")
+	secret := os.Getenv(ctx.VaultSecretEnvVar())
 	if secret != "" {
 		hash := sha256.Sum256([]byte(secret))
 		return hash[:], nil
@@ -173,7 +180,7 @@ func readSecret() ([]byte, error) {
 	}
 
 	// get the secret file from environment variable
-	secretFile := os.Getenv("CDT_VAULT_SECRET_FILE")
+	secretFile := os.Getenv(ctx.VaultSecretFileEnvVar())
 	if secretFile == "" {
 		secretFile = filepath.Join(sshDir, "id_rsa")
 	}

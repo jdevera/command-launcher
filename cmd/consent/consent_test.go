@@ -9,7 +9,8 @@ import (
 
 func TestAccessConsents(t *testing.T) {
 	// TODO: we shouldn't let the secret lib depends on the context
-	context.InitContext("test-vault", "1.0.0", "1")
+	ctx := context.InitContext("testconsent", "1.0.0", "1")
+	t.Setenv(ctx.VaultSecretEnvVar(), "very_secret")
 
 	err := saveCmdConsents("dev-group", "test-cmd", []string{
 		"USERNAME", "PASSWORD", "LOG_LEVEL",
