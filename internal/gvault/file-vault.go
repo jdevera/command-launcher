@@ -101,10 +101,17 @@ func (fv *FileVault) init() error {
 		return err
 	}
 
-	_, err = os.Stat(filepath.Join(dirVault, fv.Name))
-	if os.IsNotExist(err) {
-		_, err = os.OpenFile(filepath.Join(dirVault, fv.Name), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-		if err != nil {
+	newPath := filepath.Join(dirVault, fv.Name)
+	if _, err := os.Stat(newPath); os.IsNotExist(err) {
+		// Migration: if an entry with this name exists at the legacy shared
+		// path (~/.file-vault/), copy it into the per-app dir before creating
+		// an empty file. Remove this fallback in a future release.
+		if legacy, lerr := legacyVaultPath(fv.Name); lerr == nil {
+			if data, rerr := ioutil.ReadFile(legacy); rerr == nil {
+				return ioutil.WriteFile(newPath, data, 0600)
+			}
+		}
+		if _, err := os.OpenFile(newPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600); err != nil {
 			return err
 		}
 	}
@@ -154,61 +161,82 @@ func (fv *FileVault) encrypt(data []byte) ([]byte, error) {
 	return encrypted, nil
 }
 
+// readSecret derives the AES key for the file vault from an explicit
+// user-provided secret. Either <APPNAME>_VAULT_SECRET (a literal secret) or
+// <APPNAME>_VAULT_SECRET_FILE (a path whose contents will be hashed) must be
+// set; otherwise this returns an error rather than silently falling back to
+// any on-disk key. The previous behaviour — implicitly hashing
+// ~/.ssh/id_rsa — coupled vault recoverability to the user's SSH key
+// without ever saying so, and broke on environments with no ~/.ssh (CI
+// runners, freshly provisioned VMs).
 func readSecret() ([]byte, error) {
 	ctx, err := context.AppContext()
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
-	// first get the secret from environment variable
-	secret := os.Getenv(ctx.VaultSecretEnvVar())
-	if secret != "" {
+	if secret := os.Getenv(ctx.VaultSecretEnvVar()); secret != "" {
 		hash := sha256.Sum256([]byte(secret))
 		return hash[:], nil
 	}
 
-	empty := []byte{}
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return empty, err
+	if secretFile := os.Getenv(ctx.VaultSecretFileEnvVar()); secretFile != "" {
+		data, err := ioutil.ReadFile(secretFile)
+		if err != nil {
+			return nil, fmt.Errorf("vault secret file %s: %w", secretFile, err)
+		}
+		hash := sha256.Sum256(data)
+		return hash[:], nil
 	}
 
-	sshDir := filepath.Join(homedir, ".ssh")
-	_, err = os.Stat(sshDir)
-	if err != nil {
-		return empty, err
-	}
-
-	// get the secret file from environment variable
-	secretFile := os.Getenv(ctx.VaultSecretFileEnvVar())
-	if secretFile == "" {
-		secretFile = filepath.Join(sshDir, "id_rsa")
-	}
-
-	// in case environment variable missing, fallback to default
-	data, err := ioutil.ReadFile(secretFile)
-	if err != nil {
-		return empty, err
-	}
-
-	hash := sha256.Sum256(data)
-	return hash[:], nil
+	return nil, fmt.Errorf("vault secret not configured: set %s (literal) or %s (path to key material)",
+		ctx.VaultSecretEnvVar(), ctx.VaultSecretFileEnvVar())
 }
 
 func maybeCreateDir() (string, error) {
-	homedir, err := os.UserHomeDir()
+	dirVault, err := appVaultDir()
 	if err != nil {
 		return "", err
 	}
 
-	dirVault := filepath.Join(homedir, ".file-vault")
-	_, err = os.Stat(dirVault)
-	if os.IsNotExist(err) {
-		err := os.MkdirAll(dirVault, 0700)
-		if err != nil {
+	if _, err := os.Stat(dirVault); os.IsNotExist(err) {
+		if err := os.MkdirAll(dirVault, 0700); err != nil {
 			return "", err
 		}
 	}
 
 	return dirVault, nil
+}
+
+// appVaultDir returns <AppDir>/file-vault, scoping the vault under the
+// per-launcher tree so two binaries with different names don't share state.
+// AppDir resolution mirrors config.AppDir() (env override → ~/.appname) but
+// is inlined here to avoid a circular import (config → helper → gvault).
+func appVaultDir() (string, error) {
+	ctx, err := context.AppContext()
+	if err != nil {
+		return "", err
+	}
+
+	base := os.Getenv(ctx.AppHomeEnvVar())
+	if base == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		base = filepath.Join(home, ctx.AppDirname())
+	}
+	return filepath.Join(base, "file-vault"), nil
+}
+
+// legacyVaultPath returns the pre-migration location ~/.file-vault/<name>.
+// Used only to read entries that were written before the per-app dir layout
+// landed; new writes always go to appVaultDir(). Remove once migration window
+// closes.
+func legacyVaultPath(name string) (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".file-vault", name), nil
 }

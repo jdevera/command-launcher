@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -16,12 +17,19 @@ var (
 	isAnsiSequenceSupported = checkAnsiSequenceSupported()
 )
 
+// processName returns the basename of the currently-running binary. Used to
+// detect whether the parent of the current process is the launcher itself
+// (the launcher invokes itself for hooks and package commands) so the ANSI
+// detection can look one level further up to find the actual terminal.
+//
+// Derived from os.Executable() rather than a hardcoded literal so the
+// detection still works under any binary name (cola, mydt, ...).
 func processName() string {
-	if runtime.GOOS == "windows" {
-		return "cdt.exe"
+	exe, err := os.Executable()
+	if err != nil {
+		return ""
 	}
-
-	return "cdt"
+	return filepath.Base(exe)
 }
 
 func parentName() (string, error) {
@@ -59,7 +67,7 @@ func checkAnsiSequenceSupported() bool {
 
 // When the ANSI sequence is supported, the console will display the colors and cursor moves
 //
-// On Windows, when cdt runs in a powershell console, the ANSI sequences are not supported.
+// On Windows, when the launcher runs in a powershell console, the ANSI sequences are not supported.
 func IsAnsiSequenceSupported() bool {
 	return isAnsiSequenceSupported
 }
