@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,6 +22,9 @@ const (
 	LOCAL_COMMAND_REPOSITORY_DIRNAME_KEY = "LOCAL_COMMAND_REPOSITORY_DIRNAME"
 	USAGE_METRICS_ENABLED_KEY            = "USAGE_METRICS_ENABLED"
 	METRIC_GRAPHITE_HOST_KEY             = "METRIC_GRAPHITE_HOST"
+	METRIC_STATSD_HOST_KEY               = "METRIC_STATSD_HOST"   // "" disables the StatsD exporter
+	METRIC_STATSD_PORT_KEY               = "METRIC_STATSD_PORT"   // defaults to 8125
+	METRIC_STATSD_PREFIX_KEY             = "METRIC_STATSD_PREFIX" // namespace prefix; defaults to "launcher."
 	DEBUG_FLAGS_KEY                      = "DEBUG_FLAGS"
 	DROPIN_FOLDER_KEY                    = "DROPIN_FOLDER"
 	CI_ENABLED_KEY                       = "CI_ENABLED"
@@ -69,6 +73,9 @@ func init() {
 		LOCAL_COMMAND_REPOSITORY_DIRNAME_KEY,
 		USAGE_METRICS_ENABLED_KEY,
 		METRIC_GRAPHITE_HOST_KEY,
+		METRIC_STATSD_HOST_KEY,
+		METRIC_STATSD_PORT_KEY,
+		METRIC_STATSD_PREFIX_KEY,
 		DEBUG_FLAGS_KEY,
 		DROPIN_FOLDER_KEY,
 		CI_ENABLED_KEY,
@@ -110,6 +117,12 @@ func SetSettingValue(key string, value string) error {
 	case USAGE_METRICS_ENABLED_KEY:
 		return setBooleanConfig(upperKey, value)
 	case METRIC_GRAPHITE_HOST_KEY:
+		return setStringConfig(upperKey, value)
+	case METRIC_STATSD_HOST_KEY:
+		return setStringConfig(upperKey, value)
+	case METRIC_STATSD_PORT_KEY:
+		return setIntConfig(upperKey, value)
+	case METRIC_STATSD_PREFIX_KEY:
 		return setStringConfig(upperKey, value)
 	case DEBUG_FLAGS_KEY:
 		return setStringConfig(upperKey, value)
@@ -262,6 +275,15 @@ func setDurationConfig(key string, value string) error {
 
 func setStringConfig(key string, value string) error {
 	viper.Set(key, value)
+	return nil
+}
+
+func setIntConfig(key string, value string) error {
+	n, err := strconv.Atoi(value)
+	if err != nil {
+		return fmt.Errorf("invalid format for int type: %s", value)
+	}
+	viper.Set(key, n)
 	return nil
 }
 
