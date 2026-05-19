@@ -117,10 +117,16 @@ func preRun(cmd *cobra.Command, args []string) {
 	}
 
 	graphite := metrics.NewGraphiteMetricsCollector(viper.GetString(config.METRIC_GRAPHITE_HOST_KEY))
+	statsd := metrics.NewStatsdMetricsCollector(
+		rootCtxt.appCtx.AppName(),
+		viper.GetString(config.METRIC_STATSD_HOST_KEY),
+		viper.GetInt(config.METRIC_STATSD_PORT_KEY),
+		viper.GetString(config.METRIC_STATSD_PREFIX_KEY),
+	)
 	extensible := metrics.NewExtensibleMetricsCollector(
 		rootCtxt.backend.SystemCommand(repository.SYSTEM_METRICS_COMMAND),
 	)
-	rootCtxt.metrics = metrics.NewCompositeMetricsCollector(graphite, extensible)
+	rootCtxt.metrics = metrics.NewCompositeMetricsCollector(graphite, statsd, extensible)
 	repo, pkg, group, name := cmdAndSubCmd(cmd)
 	rootCtxt.metrics.Collect(rootCtxt.user.Partition, repo, pkg, group, name)
 }
