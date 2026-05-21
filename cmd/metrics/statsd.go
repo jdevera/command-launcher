@@ -122,4 +122,4 @@ func sendUDP(addr string, packets []string) error {
 type noopMetrics struct{}
 
 func (n *noopMetrics) Collect(uid uint8, repo, pkg, group, name string) error { return nil }
-func (n *noopMetrics) Send(cmdExitCode int, cmdError error) error              { return nil }
+func (n *noopMetrics) Send(cmdExitCode int, cmdError error) error             { return nil }

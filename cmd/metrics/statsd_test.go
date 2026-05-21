@@ -94,10 +94,10 @@ func TestStatsd_EndToEnd_UDP(t *testing.T) {
 
 func TestStatsd_StatusReflectsExitCode(t *testing.T) {
 	for _, tc := range []struct {
-		name     string
-		exit     int
-		err      error
-		wantTag  string
+		name    string
+		exit    int
+		err     error
+		wantTag string
 	}{
 		{"exit 0 + nil err", 0, nil, "status:ok"},
 		{"exit 1", 1, nil, "status:ko"},
