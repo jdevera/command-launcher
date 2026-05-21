@@ -91,6 +91,9 @@ func setDefaultConfig() {
 
 	viper.SetDefault(USAGE_METRICS_ENABLED_KEY, false)
 	viper.SetDefault(METRIC_GRAPHITE_HOST_KEY, "dummy")
+	viper.SetDefault(METRIC_STATSD_HOST_KEY, "")
+	viper.SetDefault(METRIC_STATSD_PORT_KEY, 8125)
+	viper.SetDefault(METRIC_STATSD_PREFIX_KEY, "launcher.")
 
 	viper.SetDefault(INTERNAL_COMMAND_ENABLED_KEY, false)
 	viper.SetDefault(EXPERIMENTAL_COMMAND_ENABLED_KEY, false)
