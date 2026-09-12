@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"fmt"
-	"net"
 	"strings"
 	"time"
 )
@@ -103,20 +102,6 @@ func (m *statsdMetrics) formatTags(status string) string {
 func sanitizeTagValue(v string) string {
 	r := strings.NewReplacer(",", "_", "|", "_", "#", "_", "\n", "_", " ", "_")
 	return r.Replace(v)
-}
-
-func sendUDP(addr string, packets []string) error {
-	conn, err := net.Dial("udp", addr)
-	if err != nil {
-		return fmt.Errorf("statsd dial %s: %w", addr, err)
-	}
-	defer conn.Close()
-	for _, p := range packets {
-		if _, err := conn.Write([]byte(p)); err != nil {
-			return fmt.Errorf("statsd write: %w", err)
-		}
-	}
-	return nil
 }
 
 type noopMetrics struct{}
