@@ -2,10 +2,9 @@ package metrics
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"time"
-
-	"github.com/marpaia/graphite-golang"
 )
 
 const (
@@ -13,7 +12,7 @@ const (
 )
 
 type graphiteMetrics struct {
-	graphiteHost   string
+	graphiteAddr   string
 	PkgName        string
 	CmdName        string
 	SubCmdName     string
@@ -23,7 +22,7 @@ type graphiteMetrics struct {
 
 func NewGraphiteMetricsCollector(host string) Metrics {
 	return &graphiteMetrics{
-		graphiteHost: host,
+		graphiteAddr: net.JoinHostPort(host, strconv.Itoa(graphitePort)),
 	}
 }
 
@@ -43,25 +42,20 @@ func (metrics *graphiteMetrics) Collect(uid uint8, repo, pkg, group, name string
 
 func (metrics *graphiteMetrics) Send(cmdExitCode int, cmdError error) error {
 	duration := time.Now().UnixNano() - metrics.StartTimestamp.UnixNano()
-	graphiteClient, err := graphite.GraphiteFactory("udp", metrics.graphiteHost, graphitePort, metrics.prefix())
-	if err != nil {
-		return fmt.Errorf("cannot create the graphite client: %v", err)
-	}
-
-	graphiteMetrics := []graphite.Metric{
-		graphite.NewMetric("duration", strconv.FormatInt(duration, 10), metrics.StartTimestamp.Unix()),
-		graphite.NewMetric("count", "1", metrics.StartTimestamp.Unix()),
+	timestamp := metrics.StartTimestamp.Unix()
+	prefix := metrics.prefix()
+	graphiteMetrics := []string{
+		fmt.Sprintf("%s.duration %d %d\n", prefix, duration, timestamp),
+		fmt.Sprintf("%s.count 1 %d\n", prefix, timestamp),
 	}
 
 	if cmdError != nil || cmdExitCode != 0 {
-		graphiteMetrics = append(graphiteMetrics, graphite.NewMetric("ko", "1", metrics.StartTimestamp.Unix()))
+		graphiteMetrics = append(graphiteMetrics, fmt.Sprintf("%s.ko 1 %d\n", prefix, timestamp))
 	} else {
-		graphiteMetrics = append(graphiteMetrics, graphite.NewMetric("ok", "1", metrics.StartTimestamp.Unix()))
+		graphiteMetrics = append(graphiteMetrics, fmt.Sprintf("%s.ok 1 %d\n", prefix, timestamp))
 	}
 
-	err = graphiteClient.SendMetrics(graphiteMetrics)
-
-	return err
+	return sendUDP(metrics.graphiteAddr, graphiteMetrics)
 }
 
 func (metrics *graphiteMetrics) prefix() string {

@@ -145,9 +145,10 @@ func postRun(cmd *cobra.Command, args []string) {
 	if metricsEnabled(cmd, args) {
 		err := rootCtxt.metrics.Send(frontend.RootExitCode, cmd.Context().Err())
 		if err != nil {
-			log.Errorln("Metrics usage ♾️ sending has failed")
+			log.Errorf("Metrics usage ♾️ sending has failed: %v", err)
+		} else {
+			log.Debug("Successfully sent metrics")
 		}
-		log.Debug("Successfully send metrics")
 	}
 }
 
