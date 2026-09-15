@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jdevera/command-launcher/internal/command"
 	"github.com/jdevera/command-launcher/internal/config"
@@ -186,13 +187,11 @@ func packageChecksum(pkgFile string) ([]byte, error) {
 }
 
 func extractZipEntry(targetDir string, file *zip.File) error {
-	zippedFile, err := file.Open()
+	extractedFilePath, err := zipEntryPath(targetDir, file.Name)
 	if err != nil {
-		return fmt.Errorf("installation failed: %s", err)
+		return err
 	}
-	defer zippedFile.Close()
 
-	extractedFilePath := filepath.Join(targetDir, file.Name)
 	if file.FileInfo().IsDir() {
 		log.Println("Directory Created:", extractedFilePath)
 		err := os.MkdirAll(extractedFilePath, file.Mode())
@@ -212,6 +211,16 @@ func extractZipEntry(targetDir string, file *zip.File) error {
 			}
 		}
 	} else {
+		if err := os.MkdirAll(filepath.Dir(extractedFilePath), 0755); err != nil {
+			return fmt.Errorf("cannot create parent directory for %s: %s", extractedFilePath, err)
+		}
+
+		zippedFile, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("installation failed: %s", err)
+		}
+		defer zippedFile.Close()
+
 		log.Println("File extracted:", file.Name)
 		outputFile, err := os.OpenFile(
 			extractedFilePath,
@@ -230,4 +239,12 @@ func extractZipEntry(targetDir string, file *zip.File) error {
 	}
 
 	return nil
+}
+
+func zipEntryPath(targetDir, name string) (string, error) {
+	if !filepath.IsLocal(name) || strings.Contains(name, `\`) {
+		return "", fmt.Errorf("invalid zip entry path %q", name)
+	}
+
+	return filepath.Join(targetDir, filepath.FromSlash(name)), nil
 }
