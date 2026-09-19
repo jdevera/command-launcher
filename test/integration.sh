@@ -13,14 +13,17 @@ FAILURE_COUNT=0
 
 # create output folder
 OUTPUT_DIR=$SCRIPT_DIR/output
-rm -rf $OUTPUT_DIR
-mkdir -p $OUTPUT_DIR
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
 
 ##
 # build the binary
 ##
-cd $SCRIPT_DIR
-go build -o $OUTPUT_DIR/cl -ldflags='-X main.version=integration-test -X main.buildNum=1 -X main.appName=cl -X "main.appLongName=Command Launcher"' $SCRIPT_DIR/../main.go
+cd "$SCRIPT_DIR" || exit 1
+if ! go build -o "$OUTPUT_DIR/cl" -ldflags='-X main.version=integration-test -X main.buildNum=1 -X main.appName=cl -X "main.appLongName=Command Launcher"' "$SCRIPT_DIR/../main.go"; then
+  echo "failed to build integration test binary" >&2
+  exit 1
+fi
 
 # specify the app home
 export CL_HOME=$OUTPUT_DIR/home
@@ -36,57 +39,55 @@ if [ $# -ne 0 ]; then
     echo "------------------------------------------------------------"
 
     # clean up for fresh start
-    rm -rf $CL_HOME/dropins
-    rm -rf $CL_HOME/current
-    rm -f $CL_HOME/config.json
-    mkdir -p $CL_HOME/dropins
+    rm -rf "$CL_HOME/dropins"
+    rm -rf "$CL_HOME/current"
+    rm -f "$CL_HOME/config.json"
+    mkdir -p "$CL_HOME/dropins"
 
-    let TEST_COUNT++
+    TEST_COUNT=$((TEST_COUNT + 1))
 
-    OUTPUT_DIR=$OUTPUT_DIR \
-    CL_PATH=$OUTPUT_DIR/cl \
-    CL_HOME=$CL_HOME \
-      $SCRIPT_DIR/integration/${test}.sh
-
-    if [ $? -eq 0 ]; then
+    if env \
+      OUTPUT_DIR="$OUTPUT_DIR" \
+      CL_PATH="$OUTPUT_DIR/cl" \
+      CL_HOME="$CL_HOME" \
+      "$SCRIPT_DIR/integration/${test}.sh"; then
       echo "- PASS"
     else
       echo "- FAIL"
       EXIT_CODE=1
-      let FAILURE_COUNT++
+      FAILURE_COUNT=$((FAILURE_COUNT + 1))
     fi
 
     echo ""
   done
 else
   # otherwise run all tests in integration/ folder
-  TESTS=$(ls $SCRIPT_DIR/integration/*.sh)
+  TESTS=("$SCRIPT_DIR"/integration/test-*.sh)
   echo "find all tests in integration folder:"
-  echo "$TESTS"
-  for f in $TESTS; do
+  printf '%s\n' "${TESTS[@]}"
+  for f in "${TESTS[@]}"; do
     echo "------------------------------------------------------------"
     echo "- $f"
     echo "------------------------------------------------------------"
 
     # cleanup
-    rm -rf $CL_HOME/dropins
-    rm -rf $CL_HOME/current
-    rm -f $CL_HOME/config.json
-    mkdir -p $CL_HOME/dropins
+    rm -rf "$CL_HOME/dropins"
+    rm -rf "$CL_HOME/current"
+    rm -f "$CL_HOME/config.json"
+    mkdir -p "$CL_HOME/dropins"
 
-    let TEST_COUNT++
+    TEST_COUNT=$((TEST_COUNT + 1))
 
-    OUTPUT_DIR=$OUTPUT_DIR \
-    CL_PATH=$OUTPUT_DIR/cl \
-    CL_HOME=$CL_HOME \
-    $f
-
-    if [ $? -eq 0 ]; then
+    if env \
+      OUTPUT_DIR="$OUTPUT_DIR" \
+      CL_PATH="$OUTPUT_DIR/cl" \
+      CL_HOME="$CL_HOME" \
+      "$f"; then
       echo "- PASS"
     else
       echo "- FAIL"
       EXIT_CODE=1
-      let FAILURE_COUNT++
+      FAILURE_COUNT=$((FAILURE_COUNT + 1))
     fi
 
     echo ""
@@ -96,11 +97,11 @@ fi
 ##
 # remove the output folder
 ##
-if [ $KEEP_OUTPUT == "yes" ]; then
+if [ "$KEEP_OUTPUT" == "yes" ]; then
   echo "KEEP_OUTPUT = yes, skip clean up"
 else
   echo "clean up"
-  rm -rf $OUTPUT_DIR
+  rm -rf "$OUTPUT_DIR"
 fi
 
 echo ""
