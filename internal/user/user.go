@@ -1,9 +1,9 @@
 package user
 
 import (
+	"github.com/denisbrodbeck/machineid"
 	"github.com/jdevera/command-launcher/internal/config"
 	"github.com/jdevera/command-launcher/internal/helper"
-	"github.com/denisbrodbeck/machineid"
 	"github.com/spf13/viper"
 )
 

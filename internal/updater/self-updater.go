@@ -8,10 +8,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/inconshreveable/go-update"
 	"github.com/jdevera/command-launcher/internal/console"
 	"github.com/jdevera/command-launcher/internal/helper"
 	"github.com/jdevera/command-launcher/internal/user"
-	"github.com/inconshreveable/go-update"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )

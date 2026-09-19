@@ -176,7 +176,6 @@ func metricsEnabled(cmd *cobra.Command, args []string) bool {
 	return viper.GetBool(config.USAGE_METRICS_ENABLED_KEY) && isUpdatePossible(cmd)
 }
 
-
 func initUser() {
 	var err error = nil
 	rootCtxt.user, err = user.GetUser()
