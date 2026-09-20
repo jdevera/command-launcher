@@ -91,23 +91,28 @@ Or using the `build.sh` script
 
 ### Run tests
 
-Run unit tests
+Run unit tests:
 
 ```shell
-go test -v ./...
+go test ./...
 ```
 
-Run all integration tests
+Run the self-contained CLI black-box tests:
 
 ```shell
-./test/integration.sh
+go test -tags=e2e -count=1 ./test/e2e
 ```
 
-You can run one integration test by specify the name of the integration test file (without the .sh extension). The integration tests can be found in [`test/integration`](https://github.com/criteo/command-launcher/tree/main/test/integration) folder, for example:
+Run the real HTTPS smoke test:
 
 ```shell
-./test/integration.sh test-remote
+go test -tags=e2e,remote -count=1 -run '^TestRemoteHTTPSRegistry$' ./test/e2e
 ```
+
+The HTTPS smoke test downloads its fixtures from the tagged repository declared
+in [`test/remote-fixture.json`](test/remote-fixture.json). See the
+[`test` documentation](test/README.md) for test-layer boundaries, remote
+resolution rules, fixture publishing, and legacy shell integration commands.
 
 ### Run pages locally
 
