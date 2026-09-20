@@ -31,6 +31,16 @@ export CL_HOME=$OUTPUT_DIR/home
 # unlock the file vault without depending on ~/.ssh existing (CI runners don't have one)
 export CL_VAULT_SECRET=very_secret
 
+# Resolve the single tagged remote fixture used by network-dependent suites.
+# Callers may override it explicitly; otherwise the resolver uses GitHub
+# Actions metadata, the local origin, or the checked-in fallback repository.
+if [ -z "${TEST_REMOTE_BASE_URL:-}" ]; then
+  TEST_REMOTE_BASE_URL=$(go run "$SCRIPT_DIR/remoteconfig/cmd/remote-base-url" \
+    -config "$SCRIPT_DIR/remote-fixture.json" \
+    -repository-root "$SCRIPT_DIR/..") || exit 1
+fi
+export TEST_REMOTE_BASE_URL
+
 if [ $# -ne 0 ]; then
   # in case pass test as arguments, run test from the arguments
   for test in "$@"; do

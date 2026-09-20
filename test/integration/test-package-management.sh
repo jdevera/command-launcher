@@ -5,6 +5,7 @@
 # CL_HOME: the path of the command launcher home directory
 # OUTPUT_DIR: the output folder
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+REMOTE_URL=$TEST_REMOTE_BASE_URL
 
 # clean up the dropin folder and local folder
 rm -rf $CL_HOME/dropins
@@ -16,7 +17,7 @@ mkdir -p $CL_HOME/dropins
 cp -R $SCRIPT_DIR/../packages-src/bonjour $CL_HOME/dropins
 
 # download remote package
-RESULT=$($OUTPUT_DIR/cl config command_repository_base_url https://raw.githubusercontent.com/criteo/command-launcher/main/examples/remote-repo)
+RESULT=$($OUTPUT_DIR/cl config command_repository_base_url "$REMOTE_URL")
 RESULT=$($OUTPUT_DIR/cl)
 
 ################
@@ -327,7 +328,15 @@ fi
 
 ################
 echo "> test install git package"
-RESULT=$($CL_PATH package install --git https://github.com/criteo/command-launcher-package-example)
+GIT_PACKAGE_REPO=$OUTPUT_DIR/command-launcher-package-example
+rm -rf "$GIT_PACKAGE_REPO"
+cp -R "$SCRIPT_DIR/../packages-src/git-example" "$GIT_PACKAGE_REPO"
+git -C "$GIT_PACKAGE_REPO" init -q
+git -C "$GIT_PACKAGE_REPO" config user.email "integration-test@example.invalid"
+git -C "$GIT_PACKAGE_REPO" config user.name "Integration Test"
+git -C "$GIT_PACKAGE_REPO" add .
+git -C "$GIT_PACKAGE_REPO" commit -q -m "Create Git package fixture"
+RESULT=$($CL_PATH package install --git "$GIT_PACKAGE_REPO")
 RESULT=$($CL_PATH package list --dropin --include-cmd)
 
 echo "* should contain package from git repo"
@@ -379,15 +388,15 @@ fi
 
 ################
 echo "> test install file package"
-RESULT=$($CL_PATH package install --file https://github.com/criteo/command-launcher/raw/main/test/remote-repo/command-launcher-demo-2.0.0.pkg)
+RESULT=$($CL_PATH package install --file "$REMOTE_URL/command-launcher-demo-1.0.0.pkg")
 
-echo "* should contain 2.0.0 demo package"
+echo "* should contain 1.0.0 demo package"
 RESULT=$($CL_PATH package list --dropin --include-cmd)
-echo "$RESULT" | grep -q "Package: command-launcher-demo (v2.0.0)"
+echo "$RESULT" | grep -q "Package: command-launcher-demo (v1.0.0)"
 if [ $? -eq 0 ]; then
   echo "OK"
 else
-  echo "KO - should contain 2.0.0 demo package"
+  echo "KO - should contain 1.0.0 demo package"
   exit 1
 fi
 

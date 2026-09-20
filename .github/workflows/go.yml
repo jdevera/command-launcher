@@ -65,6 +65,10 @@ jobs:
     - name: CLI black-box tests
       run: go test -tags=e2e -count=1 -v ./test/e2e
 
+    - name: Remote HTTPS smoke test
+      if: startsWith(github.ref, 'refs/tags/') && matrix.arch == 'amd64'
+      run: go test -tags=e2e,remote -count=1 -run '^TestRemoteHTTPSRegistry$' -v ./test/e2e
+
     - name: Integration-test
       run: |
         echo "${{github.workspace}}/test"
@@ -181,4 +185,3 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: output/latest.yaml
-

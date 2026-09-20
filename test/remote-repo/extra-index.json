@@ -7,9 +7,9 @@
     "endPartition": 9
   },
   {
-    "name": "system-pkg-demo",
-    "version": "0.0.1",
-    "checksum": "34aea3ed1ccdfca85a5e52ff4edf42e0abe5f15fdd3453af4f09bb80f25bb6df",
+    "name": "bonjour",
+    "version": "1.0.0",
+    "checksum": "7244e66cc7084f883cb924020fd5a6e000dc6613d19ef07bc33a1d317412d4ff",
     "startPartition": 0,
     "endPartition": 9
   }
