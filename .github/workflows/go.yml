@@ -59,8 +59,11 @@ jobs:
       run: |
         ./build.sh -v ${{github.ref_name}} -b ${{github.run_number}} -n cola -l "Command Launcher" -o build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
 
-    - name: Test & Benchmark
-      run: go test -count=1 -v ./...
+    - name: Unit tests
+      run: go test -v ./...
+
+    - name: CLI black-box tests
+      run: go test -tags=e2e -count=1 -v ./test/e2e
 
     - name: Integration-test
       run: |
@@ -178,5 +181,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: output/latest.yaml
-
 
