@@ -1,18 +1,42 @@
 package helper
 
-// Open a ticket to fix it asap
-// func TestDarwinDnsResolve(t *testing.T) {
-// 	if runtime.GOOS == "darwin" {
-// 		ip, resolved := DarwinDnsResolve("https://go.dev")
-// 		assert.True(t, resolved)
-// 		assert.NotEmpty(t, ip)
+import (
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
+	"testing"
 
-// 		parts := strings.Split(ip, ".")
-// 		assert.Equal(t, 4, len(parts))
-// 		for i := 0; i < 4; i++ {
-// 			d, err := strconv.Atoi(parts[i])
-// 			assert.Nil(t, err)
-// 			assert.True(t, d <= 255)
-// 		}
-// 	}
-// }
+	"github.com/stretchr/testify/require"
+)
+
+func TestLoadFileFromURLRejectsUntrustedCertificate(t *testing.T) {
+	server := untrustedTLSServer(t)
+
+	contents, err := LoadFileFromUrl(server.URL)
+
+	require.ErrorContains(t, err, "certificate")
+	require.Empty(t, contents)
+}
+
+func TestDownloadFileFromURLRejectsUntrustedCertificate(t *testing.T) {
+	server := untrustedTLSServer(t)
+	destination := filepath.Join(t.TempDir(), "download")
+
+	err := DownloadFileFromUrl(server.URL, destination, false)
+
+	require.ErrorContains(t, err, "certificate")
+}
+
+func untrustedTLSServer(t *testing.T) *httptest.Server {
+	t.Helper()
+
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("untrusted content"))
+	}))
+	server.Config.ErrorLog = log.New(io.Discard, "", 0)
+	server.StartTLS()
+	t.Cleanup(server.Close)
+	return server
+}
