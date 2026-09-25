@@ -7,13 +7,12 @@ on:
   pull_request:
     branches: [ 'main', 'v*.*.*', 'remote-registry' ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    outputs:
-      sha_short: ${{steps.vars.outputs.sha_short}}
-      arch: ${{steps.vars.outputs.arch}}
-      os: ${{steps.vars.outputs.os}}
     strategy:
       matrix:
         arch: [amd64,arm64]
@@ -42,14 +41,11 @@ jobs:
         cache: 'npm'
         cache-dependency-path: gh-pages/package-lock.json
 
-    - name: generate vars
+    - name: Generate platform name
       id: vars
       shell: bash
       run: |
-        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        echo "arch=${{matrix.arch}}" >> $GITHUB_OUTPUT
         echo "os=$(go run test/get-os.go)" >> $GITHUB_OUTPUT
-        echo "ext=$(go run test/get-os.go extension)" >> $GITHUB_OUTPUT
 
     - name: Build
       env:
@@ -57,7 +53,7 @@ jobs:
         CGO_ENABLED: ${{matrix.cgo}}
       shell: bash
       run: |
-        ./build.sh -v ${{github.ref_name}} -b ${{github.run_number}} -n cola -l "Command Launcher" -o build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
+        ./build.sh -v ${{github.ref_name}} -b ${{github.run_number}} -n cola -l "Command Launcher" -o build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.sha}}
 
     - name: Unit tests
       run: go test -v ./...
@@ -82,21 +78,10 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: ${{steps.vars.outputs.os}}-cola-${{matrix.arch}}
-        path: build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}}
-
-    - name: Rename binary name for release
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        mv build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{steps.vars.outputs.sha_short}} build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
-
-    - name: Release
-      uses: softprops/action-gh-release@v3
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.ref_name}}${{steps.vars.outputs.ext}}
+        path: build/cola_${{steps.vars.outputs.os}}_${{matrix.arch}}_${{github.sha}}
 
   packaging:
+    if: startsWith(github.ref, 'refs/tags/') && success()
     needs: [ build ]
     runs-on: ubuntu-latest
     steps:
@@ -115,6 +100,11 @@ jobs:
         with:
           name: windows-cola-amd64
           path: output/windows/amd64/
+      - name: Download windows arm64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-cola-arm64
+          path: output/windows/arm64/
       - name: Download darwin amd64 artifact
         uses: actions/download-artifact@v8
         with:
@@ -126,39 +116,42 @@ jobs:
           name: darwin-cola-arm64
           path: output/darwin/arm64/
 
-      - name: Rename binary name
+      - name: Prepare release assets
         run: |
-          mv output/darwin/arm64/cola_darwin_arm64_${{needs.build.outputs.sha_short}} output/darwin/arm64/cola
-          mv output/darwin/amd64/cola_darwin_amd64_${{needs.build.outputs.sha_short}} output/darwin/amd64/cola
-          mv output/linux/amd64/cola_linux_amd64_${{needs.build.outputs.sha_short}} output/linux/amd64/cola
-          mv output/linux/arm64/cola_linux_arm64_${{needs.build.outputs.sha_short}} output/linux/arm64/cola
-          mv output/windows/amd64/cola_windows_amd64_${{needs.build.outputs.sha_short}} output/windows/amd64/cola.exe
+          mkdir -p release
+          cp output/darwin/arm64/cola_darwin_arm64_${{github.sha}} release/cola_darwin_arm64_${{github.ref_name}}
+          cp output/darwin/amd64/cola_darwin_amd64_${{github.sha}} release/cola_darwin_amd64_${{github.ref_name}}
+          cp output/linux/amd64/cola_linux_amd64_${{github.sha}} release/cola_linux_amd64_${{github.ref_name}}
+          cp output/linux/arm64/cola_linux_arm64_${{github.sha}} release/cola_linux_arm64_${{github.ref_name}}
+          cp output/windows/amd64/cola_windows_amd64_${{github.sha}} release/cola_windows_amd64_${{github.ref_name}}.exe
+          cp output/windows/arm64/cola_windows_arm64_${{github.sha}} release/cola_windows_arm64_${{github.ref_name}}.exe
+          mv output/darwin/arm64/cola_darwin_arm64_${{github.sha}} output/darwin/arm64/cola
+          mv output/darwin/amd64/cola_darwin_amd64_${{github.sha}} output/darwin/amd64/cola
+          mv output/linux/amd64/cola_linux_amd64_${{github.sha}} output/linux/amd64/cola
+          mv output/linux/arm64/cola_linux_arm64_${{github.sha}} output/linux/arm64/cola
+          mv output/windows/amd64/cola_windows_amd64_${{github.sha}} output/windows/amd64/cola.exe
+          mv output/windows/arm64/cola_windows_arm64_${{github.sha}} output/windows/arm64/cola.exe
 
       - name: Zip the package
         uses: thedoctor0/zip-release@0.7.6
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           type: 'zip'
           filename: cola_${{github.ref_name}}.zip
           directory: output
 
-      - name: Upload
+      - name: Collect combined package
+        run: mv output/cola_${{github.ref_name}}.zip release/
+
+      - name: Upload release assets
         uses: actions/upload-artifact@v7
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: all-in-one.zip
-          path: output/cola_${{github.ref_name}}.zip
+          name: release-assets
+          path: release/
+          if-no-files-found: error
 
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: output
-
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: output/cola_${{github.ref_name}}.zip
-
 
   update-latest-version:
     needs: [ packaging ]
@@ -180,8 +173,26 @@ jobs:
           name: latest.yaml
           path: output/latest.yaml
 
-      - name: Release & Update the version index
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/') && success()
+    needs: [ packaging, update-latest-version ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v8
         with:
-          files: output/latest.yaml
+          name: release-assets
+          path: release/
+
+      - name: Download latest version index
+        uses: actions/download-artifact@v8
+        with:
+          name: latest.yaml
+          path: release/
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: release/*

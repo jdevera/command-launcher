@@ -76,6 +76,11 @@ Release-tag workflows run this smoke test once on Linux, Windows, and macOS.
 The `amd64` matrix entry is used to avoid repeating architecture-independent
 TLS coverage.
 
+Matrix jobs only upload workflow artifacts. Packaging waits for every Linux,
+Windows, and macOS build and test job to succeed, and a single final job then
+publishes all binaries, the combined archive, and `latest.yaml` together. If
+any matrix entry fails, no job with GitHub release write permission runs.
+
 ## Shell integration tests
 
 Run all legacy shell integration tests with:
