@@ -17,10 +17,12 @@ import (
 )
 
 const commandTimeout = 15 * time.Second
+const launcherPathEnvironment = "COMMAND_LAUNCHER_E2E_BINARY"
 
 var (
-	launcherPath   string
-	repositoryRoot string
+	launcherPath              string
+	launcherEnvironmentPrefix = "CL"
+	repositoryRoot            string
 )
 
 type commandResult struct {
@@ -36,6 +38,21 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+
+	if configuredLauncherPath := os.Getenv(launcherPathEnvironment); configuredLauncherPath != "" {
+		launcherPath, err = filepath.Abs(configuredLauncherPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "resolve configured e2e launcher path: %v\n", err)
+			os.Exit(1)
+		}
+		if info, statErr := os.Stat(launcherPath); statErr != nil || info.IsDir() {
+			fmt.Fprintf(os.Stderr, "configured e2e launcher %q is not an executable file\n", launcherPath)
+			os.Exit(1)
+		}
+		launcherName := strings.TrimSuffix(filepath.Base(launcherPath), filepath.Ext(launcherPath))
+		launcherEnvironmentPrefix = strings.ToUpper(launcherName)
+		os.Exit(m.Run())
 	}
 
 	buildDir, err := os.MkdirTemp("", "command-launcher-e2e-*")
@@ -85,7 +102,7 @@ func executableExtension() string {
 
 func runLauncher(t *testing.T, home string, environment map[string]string, args ...string) commandResult {
 	t.Helper()
-	return runExecutable(t, launcherPath, "CL", home, environment, args...)
+	return runExecutable(t, launcherPath, launcherEnvironmentPrefix, home, environment, args...)
 }
 
 func runExecutable(t *testing.T, executable, environmentPrefix, home string, environment map[string]string, args ...string) commandResult {

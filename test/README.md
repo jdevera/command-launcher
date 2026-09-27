@@ -45,6 +45,11 @@ localhost, literal loopback addresses, and filesystem URLs. It proves that the
 compiled launcher can use the host operating system's trusted certificate roots
 to download, install, and execute a package.
 
+Set `COMMAND_LAUNCHER_E2E_BINARY` to exercise an existing launcher binary
+instead of having the test harness build one. Release-tag workflows use this to
+smoke-test the exact amd64 artifact produced by `build.sh` on Linux, Windows,
+and macOS before packaging and publication.
+
 The remote is declared once in [`remote-fixture.json`](remote-fixture.json).
 The base URL is resolved in this order:
 
@@ -75,8 +80,10 @@ Do not move an existing fixture tag. Unique tags keep previous test runs
 reproducible and avoid stale raw-content caches.
 
 Release-tag workflows run this smoke test once on Linux, Windows, and macOS.
-The `amd64` matrix entry is used to avoid repeating architecture-independent
-TLS coverage.
+The `amd64` matrix entry provides an executable artifact on the current hosted
+runners and avoids repeating architecture-independent TLS coverage. ARM64
+artifacts are built and packaged but are not yet runtime-smoked on native
+ARM64 runners.
 
 Matrix jobs only upload workflow artifacts. Packaging waits for every Linux,
 Windows, and macOS build and test job to succeed, and a single final job then
