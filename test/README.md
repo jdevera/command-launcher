@@ -22,9 +22,11 @@ go test -tags=e2e -count=1 ./test/e2e
 ```
 
 These tests build the launcher, execute it as a subprocess, and isolate its
-home directory. The remote-package lifecycle scenario uses a temporary HTTP
-server so it can test installation and updates without network access. It does
-not claim to test public HTTPS.
+home directory. They cover basic discovery and help, configuration output,
+external-command exit codes, executable-derived runtime identity, YAML
+manifests, and the remote-package lifecycle. The remote-package scenario uses
+a temporary HTTP server so it can test installation and updates without
+network access. It does not claim to test public HTTPS.
 
 `-count=1` is required because the e2e package builds production code as a
 subprocess. Go's test-result cache cannot otherwise detect production-source
@@ -92,11 +94,11 @@ Run all legacy shell integration tests with:
 Run selected scripts by passing their names without `.sh`:
 
 ```shell
-./test/integration.sh test-basic test-exit-code
+./test/integration.sh test-cmd-context test-flag-arg
 ```
 
-These suites require Bash and are being migrated incrementally to Go
-black-box tests. Their external registry references use the same
+The remaining 12 suites require Bash and are being migrated incrementally to
+Go black-box tests. Their external registry references use the same
 `TEST_REMOTE_BASE_URL` resolution described above. Tests that need a second
 registry or a Git repository create those fixtures from checked-in files, so
 they do not depend on another GitHub repository.

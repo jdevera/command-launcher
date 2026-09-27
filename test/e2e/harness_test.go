@@ -85,13 +85,18 @@ func executableExtension() string {
 
 func runLauncher(t *testing.T, home string, environment map[string]string, args ...string) commandResult {
 	t.Helper()
+	return runExecutable(t, launcherPath, "CL", home, environment, args...)
+}
+
+func runExecutable(t *testing.T, executable, environmentPrefix, home string, environment map[string]string, args ...string) commandResult {
+	t.Helper()
 
 	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
 	defer cancel()
 
-	command := exec.CommandContext(ctx, launcherPath, args...)
+	command := exec.CommandContext(ctx, executable, args...)
 	command.Dir = filepath.Dir(home)
-	command.Env = launcherEnvironment(home, environment)
+	command.Env = launcherEnvironment(environmentPrefix, home, environment)
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -125,12 +130,13 @@ func runLauncher(t *testing.T, home string, environment map[string]string, args 
 	return result
 }
 
-func launcherEnvironment(home string, overrides map[string]string) []string {
+func launcherEnvironment(environmentPrefix, home string, overrides map[string]string) []string {
+	prefix := strings.ToUpper(environmentPrefix) + "_"
 	replaced := map[string]string{
-		"CL_DEBUG_FLAGS":  "use_file_vault",
-		"CL_HOME":         home,
-		"CL_VAULT_SECRET": "e2e-test-secret",
-		"NO_COLOR":        "1",
+		prefix + "DEBUG_FLAGS":  "use_file_vault",
+		prefix + "HOME":         home,
+		prefix + "VAULT_SECRET": "e2e-test-secret",
+		"NO_COLOR":              "1",
 	}
 	for key, value := range overrides {
 		replaced[key] = value
@@ -139,7 +145,8 @@ func launcherEnvironment(home string, overrides map[string]string) []string {
 	environment := make([]string, 0, len(os.Environ())+len(replaced))
 	for _, entry := range os.Environ() {
 		key, _, found := strings.Cut(entry, "=")
-		if !found || strings.HasPrefix(strings.ToUpper(key), "CL_") {
+		upperKey := strings.ToUpper(key)
+		if !found || strings.HasPrefix(upperKey, "CL_") || strings.HasPrefix(upperKey, prefix) {
 			continue
 		}
 		if _, overridden := replaced[key]; overridden {
