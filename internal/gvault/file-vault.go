@@ -111,9 +111,11 @@ func (fv *FileVault) init() error {
 				return ioutil.WriteFile(newPath, data, 0600)
 			}
 		}
-		if _, err := os.OpenFile(newPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600); err != nil {
+		file, err := os.OpenFile(newPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+		if err != nil {
 			return err
 		}
+		return file.Close()
 	}
 
 	return nil
