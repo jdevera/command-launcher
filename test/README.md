@@ -47,7 +47,7 @@ to download, install, and execute a package.
 
 Set `COMMAND_LAUNCHER_E2E_BINARY` to exercise an existing launcher binary
 instead of having the test harness build one. Release-tag workflows use this to
-smoke-test the exact amd64 artifact produced by `build.sh` on Linux, Windows,
+smoke-test the exact native artifact produced by `build.sh` on Linux, Windows,
 and macOS before packaging and publication.
 
 The remote is declared once in [`remote-fixture.json`](remote-fixture.json).
@@ -89,10 +89,17 @@ artifacts.
 
 The [release workflow](../.github/workflows/release.yml) runs only for release
 tags. It enables the HTTPS smoke test once on Linux, Windows, and macOS and
-retains the matrix binaries for packaging. The `amd64` entry provides an
-executable artifact on the current hosted runners and avoids repeating
-architecture-independent TLS coverage. ARM64 artifacts are built and packaged
-but are not yet runtime-smoked on native ARM64 runners.
+retains the matrix binaries for packaging. The workflow reads the runner's
+native Go architecture with `go env GOARCH` and smoke-tests the matching
+artifact. On the current GitHub-hosted runners this selects Linux amd64,
+Windows amd64, and macOS ARM64.
+
+The other artifact for each operating system is still built and packaged, but
+is not executed by this smoke test. In particular, Linux and Windows ARM64 are
+cross-compiled on x64 runners. Testing those binaries would require native
+ARM64 runners or explicit emulation. The macOS amd64 artifact is not selected
+because the current macOS runner is ARM64; running both macOS architectures
+would repeat the same operating-system and TLS coverage.
 
 Release packaging waits for every Linux, Windows, and macOS build and test job
 to succeed, and a single final job then publishes all binaries, the combined
