@@ -31,13 +31,15 @@ export CL_HOME=$OUTPUT_DIR/home
 # unlock the file vault without depending on ~/.ssh existing (CI runners don't have one)
 export CL_VAULT_SECRET=very_secret
 
-# Resolve the single tagged remote fixture used by network-dependent suites.
-# Callers may override it explicitly; otherwise the resolver uses GitHub
-# Actions metadata, the local origin, or the checked-in fallback repository.
+# Use the checked-in registry for deterministic integration tests. The separate
+# remote HTTPS smoke test exercises the tagged public fixture and system trust
+# store. Callers can still override this for an explicit integration run.
 if [ -z "${TEST_REMOTE_BASE_URL:-}" ]; then
-  TEST_REMOTE_BASE_URL=$(go run "$SCRIPT_DIR/remoteconfig/cmd/remote-base-url" \
-    -config "$SCRIPT_DIR/remote-fixture.json" \
-    -repository-root "$SCRIPT_DIR/..") || exit 1
+  REMOTE_FIXTURE_DIR="$SCRIPT_DIR/../examples/remote-repo"
+  if command -v cygpath >/dev/null 2>&1; then
+    REMOTE_FIXTURE_DIR=$(cygpath -m "$REMOTE_FIXTURE_DIR")
+  fi
+  TEST_REMOTE_BASE_URL="file://$REMOTE_FIXTURE_DIR"
 fi
 export TEST_REMOTE_BASE_URL
 

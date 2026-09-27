@@ -98,7 +98,10 @@ Run selected scripts by passing their names without `.sh`:
 ```
 
 The remaining 12 suites require Bash and are being migrated incrementally to
-Go black-box tests. Their external registry references use the same
-`TEST_REMOTE_BASE_URL` resolution described above. Tests that need a second
-registry or a Git repository create those fixtures from checked-in files, so
-they do not depend on another GitHub repository.
+Go black-box tests. They use the checked-in `examples/remote-repo` directory as
+their default registry, exposed through a `file://` URL. Tests that need a
+second registry or a Git repository also create those fixtures from checked-in
+files, so the normal integration run does not require network access.
+
+Set `TEST_REMOTE_BASE_URL` explicitly to run the legacy scenarios against a
+different registry. This does not affect the release-only HTTPS smoke test.
