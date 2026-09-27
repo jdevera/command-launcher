@@ -79,16 +79,25 @@ Treat fixture tags as immutable:
 Do not move an existing fixture tag. Unique tags keep previous test runs
 reproducible and avoid stale raw-content caches.
 
-Release-tag workflows run this smoke test once on Linux, Windows, and macOS.
-The `amd64` matrix entry provides an executable artifact on the current hosted
-runners and avoids repeating architecture-independent TLS coverage. ARM64
-artifacts are built and packaged but are not yet runtime-smoked on native
-ARM64 runners.
+The shared [build and test workflow](../.github/workflows/build-test.yml) runs
+the same Linux, Windows, and macOS matrix for normal CI and releases. The
+[CI workflow](../.github/workflows/ci.yml) calls it for pull requests, pushes
+to long-lived branches, and manual runs. Feature-branch pushes with an open
+pull request therefore produce one pull-request run rather than duplicate
+`push` and `pull_request` runs. Normal CI is offline and does not retain build
+artifacts.
 
-Matrix jobs only upload workflow artifacts. Packaging waits for every Linux,
-Windows, and macOS build and test job to succeed, and a single final job then
-publishes all binaries, the combined archive, and `latest.yaml` together. If
-any matrix entry fails, no job with GitHub release write permission runs.
+The [release workflow](../.github/workflows/release.yml) runs only for release
+tags. It enables the HTTPS smoke test once on Linux, Windows, and macOS and
+retains the matrix binaries for packaging. The `amd64` entry provides an
+executable artifact on the current hosted runners and avoids repeating
+architecture-independent TLS coverage. ARM64 artifacts are built and packaged
+but are not yet runtime-smoked on native ARM64 runners.
+
+Release packaging waits for every Linux, Windows, and macOS build and test job
+to succeed, and a single final job then publishes all binaries, the combined
+archive, and `latest.yaml` together. If any matrix entry fails, no job with
+GitHub release write permission runs.
 
 ## Shell integration tests
 

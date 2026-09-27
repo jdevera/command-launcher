@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'v*.*.*'
+      - remote-registry
+  pull_request:
+    branches:
+      - main
+      - 'v*.*.*'
+      - remote-registry
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-test.yml
+    with:
+      release: false
