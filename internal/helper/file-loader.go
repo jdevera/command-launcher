@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,7 +26,7 @@ func LoadFile(fileUrlOrPath string) ([]byte, error) {
 
 // Load a file from a http(s) url
 func LoadFileFromUrl(url string) ([]byte, error) {
-	resp, err := HttpGetWrapper(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +53,7 @@ func DownloadFile(fileUrlOrPath string, dest string, showProgress bool) error {
 func DownloadFileFromUrl(url string, dest string, showProgress bool) error {
 	client := grab.NewClient()
 
-	resolvedUrl, resolved := ResolveUrl(url) // fix mac OS issue
-	if resolved {
-		client.HTTPClient.(*http.Client).Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
-	req, err := grab.NewRequest(dest, resolvedUrl)
+	req, err := grab.NewRequest(dest, url)
 	if err != nil {
 		return fmt.Errorf("cannot get request from the server (%v)", err)
 	}

@@ -4,24 +4,28 @@ import (
 	"testing"
 
 	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/jdevera/command-launcher/internal/helper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccessConsents(t *testing.T) {
 	// TODO: we shouldn't let the secret lib depends on the context
 	ctx := context.InitContext("testconsent", "1.0.0", "1")
+	t.Setenv(ctx.AppHomeEnvVar(), t.TempDir())
+	t.Setenv(ctx.DebugFlagsEnvVar(), helper.USE_FILE_VAULT)
 	t.Setenv(ctx.VaultSecretEnvVar(), "very_secret")
 
 	err := saveCmdConsents("dev-group", "test-cmd", []string{
 		"USERNAME", "PASSWORD", "LOG_LEVEL",
 	}, 30)
 
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	consent, err := getCmdConsents("dev-group", "test-cmd")
 
-	assert.Nil(t, err)
-	assert.NotNil(t, consent)
+	require.NoError(t, err)
+	require.NotNil(t, consent)
 	assert.Equal(t, 3, len(consent.Consents))
 	assert.Equal(t, "USERNAME", consent.Consents[0])
 	assert.Equal(t, "PASSWORD", consent.Consents[1])

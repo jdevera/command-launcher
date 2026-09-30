@@ -1,0 +1,18 @@
+{
+  "pkgName": "command-launcher-example-package",
+  "version": "0.0.1",
+  "cmds": [
+    {
+      "name": "cola-example",
+      "type": "group",
+      "short": "example commands"
+    },
+    {
+      "name": "greeting",
+      "type": "executable",
+      "group": "cola-example",
+      "short": "print a greeting",
+      "executable": "{{.PackageDir}}/greeting.{{if eq .Os \"windows\"}}bat{{else}}sh{{end}}"
+    }
+  ]
+}

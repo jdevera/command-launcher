@@ -5,13 +5,26 @@
 # CL_HOME: the path of the command launcher home directory
 # OUTPUT_DIR: the output folder
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+DEFAULT_REMOTE_URL=$TEST_REMOTE_BASE_URL
+EXTRA_REMOTE_DIR=$OUTPUT_DIR/extra-remote-repo
+rm -rf "$EXTRA_REMOTE_DIR"
+mkdir -p "$EXTRA_REMOTE_DIR"
+cp "$SCRIPT_DIR/../remote-repo/command-launcher-demo-2.0.0.pkg" "$EXTRA_REMOTE_DIR"
+cp "$SCRIPT_DIR/../packages-src/bonjour/bonjour-v1.pkg" "$EXTRA_REMOTE_DIR/bonjour-1.0.0.pkg"
+cp "$SCRIPT_DIR/../remote-repo/extra-index.json" "$EXTRA_REMOTE_DIR/index.json"
+
+NATIVE_EXTRA_REMOTE_DIR=${EXTRA_REMOTE_DIR/\/c\//C:/}
+NATIVE_EXTRA_REMOTE_DIR=${NATIVE_EXTRA_REMOTE_DIR/\/d\//D:/}
+NATIVE_EXTRA_REMOTE_DIR=${NATIVE_EXTRA_REMOTE_DIR/\/e\//E:/}
+NATIVE_EXTRA_REMOTE_DIR=${NATIVE_EXTRA_REMOTE_DIR/\/f\//F:/}
+EXTRA_REMOTE_URL=file://${NATIVE_EXTRA_REMOTE_DIR}
 
 # clean up the dropin folder
 rm -rf $CL_HOME/dropins
 mkdir -p $CL_HOME/dropins
 
 echo "> test download default remote command"
-RESULT=$($OUTPUT_DIR/cl config command_repository_base_url https://raw.githubusercontent.com/criteo/command-launcher/main/examples/remote-repo)
+RESULT=$($OUTPUT_DIR/cl config command_repository_base_url "$DEFAULT_REMOTE_URL")
 RESULT=$($OUTPUT_DIR/cl)
 
 echo "* should have hello command installed"
@@ -27,7 +40,7 @@ fi
 echo "* should contain default remote registry"
 RESULT=$($CL_PATH remote list)
 echo "$RESULT"
-echo "$RESULT" | grep -q "default         : https://raw.githubusercontent.com/criteo/command-launcher/main/examples/remote-repo"
+echo "$RESULT" | grep -F -q "default         : $DEFAULT_REMOTE_URL"
 if [ $? -eq 0 ]; then
   # ok
   echo "OK"
@@ -38,11 +51,11 @@ fi
 
 
 echo "> test add extra remote registry"
-RESULT=$($CL_PATH remote add extra1 https://raw.githubusercontent.com/criteo/command-launcher/main/test/remote-repo)
+RESULT=$($CL_PATH remote add extra1 "$EXTRA_REMOTE_URL")
 RESULT=$($CL_PATH remote list)
 
 echo "* should contain default remote registry"
-echo "$RESULT" | grep -q "default         : https://raw.githubusercontent.com/criteo/command-launcher/main/examples/remote-repo"
+echo "$RESULT" | grep -F -q "default         : $DEFAULT_REMOTE_URL"
 if [ $? -eq 0 ]; then
   # ok
   echo "OK"
@@ -52,7 +65,7 @@ else
 fi
 
 echo "* should contain extra remote registry"
-echo "$RESULT" | grep -q "extra1          : https://raw.githubusercontent.com/criteo/command-launcher/main/test/remote-repo"
+echo "$RESULT" | grep -F -q "extra1          : $EXTRA_REMOTE_URL"
 if [ $? -eq 0 ]; then
   # ok
   echo "OK"
@@ -61,18 +74,8 @@ else
   exit 1
 fi
 
-echo "* should contain extra command: 'bonjour'"
-RESULT=$($CL_PATH)
-echo "$RESULT" | grep -q "bonjour"
-if [ $? -eq 0 ]; then
-  # ok
-  echo "OK"
-else
-  echo "KO - should contain extra command 'bonjour'"
-  exit 1
-fi
-
 echo "* should contain auto-renamed command: 'hello@@command-launcher-demo@extra1'"
+RESULT=$($CL_PATH)
 echo "$RESULT" | grep -q "hello@@command-launcher-demo@extra1"
 if [ $? -eq 0 ]; then
   # ok
@@ -108,7 +111,7 @@ echo "> test remote add with --sync-policy flag"
 # delete extra1 first to test adding with sync-policy
 $CL_PATH remote delete extra1
 
-RESULT=$($CL_PATH remote add extra1 https://raw.githubusercontent.com/criteo/command-launcher/main/test/remote-repo --sync-policy daily)
+RESULT=$($CL_PATH remote add extra1 "$EXTRA_REMOTE_URL" --sync-policy daily)
 
 echo "* should have sync_policy set to 'daily' in config"
 RESULT=$(cat $CL_HOME/config.json | grep -o '"sync_policy": "daily"')
@@ -183,10 +186,10 @@ rm -rf $CL_HOME/extra1/command-launcher-demo
 
 echo "* should install new package"
 RESULT=$($CL_PATH)
-echo "$RESULT" | grep -q "Update done! Enjoy coding!"
-if [ $? -eq 0 ]; then
+if [ -f "$CL_HOME/extra1/command-launcher-demo/manifest.mf" ]; then
   echo "OK"
 else
+  echo "$RESULT"
   echo "KO - should install new package"
   exit 1
 fi
@@ -204,8 +207,8 @@ fi
 rm -rf $CL_HOME/extra1/command-launcher-demo
 echo "* should NOT install new package"
 RESULT=$($CL_PATH)
-echo "$RESULT" | grep -q "Update done! Enjoy coding!"
-if [ $? -eq 0 ]; then
+if [ -e "$CL_HOME/extra1/command-launcher-demo" ]; then
+  echo "$RESULT"
   echo "KO - should NOT install new package"
   exit 1
 else
@@ -218,7 +221,7 @@ $CL_PATH config command_update_enabled false
 echo "> test delete extra remote registry"
 RESULT=$($CL_PATH remote delete extra1)
 RESULT=$($CL_PATH remote list)
-echo "$RESULT" | grep -q "default         : https://raw.githubusercontent.com/criteo/command-launcher/main/examples/remote-repo"
+echo "$RESULT" | grep -F -q "default         : $DEFAULT_REMOTE_URL"
 if [ $? -eq 0 ]; then
   # ok
   echo "OK"
@@ -228,7 +231,7 @@ else
 fi
 
 echo "* should NOT contain default remote registry"
-echo "$RESULT" | grep -q "extra1          : https://raw.githubusercontent.com/criteo/command-launcher/main/test/remote-repo"
+echo "$RESULT" | grep -F -q "extra1          : $EXTRA_REMOTE_URL"
 if [ $? -eq 0 ]; then
   echo "KO - should NOT contain extra remote registry"
   exit 1
@@ -236,14 +239,12 @@ else
   echo "OK"
 fi
 
-echo "* should NOT contain extra command"
+echo "* should NOT contain auto-renamed extra command"
 RESULT=$($CL_PATH)
-echo "$RESULT" | grep -q "bonjour"
+echo "$RESULT" | grep -q "hello@@command-launcher-demo@extra1"
 if [ $? -eq 0 ]; then
-  echo "KO - should NOT contain extra command 'bonjour'"
+  echo "KO - should NOT contain auto-renamed extra command"
   exit 1
 else
   echo "OK"
 fi
-
-

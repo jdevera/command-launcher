@@ -1,0 +1,88 @@
+name: Build and test
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: Run the remote smoke test and retain release artifacts
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        cgo: [0]
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            arch: arm64
+            cgo: 1
+          - os: macos-latest
+            arch: amd64
+            cgo: 1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.3
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: gh-pages/package-lock.json
+
+      - name: Generate platform details
+        id: vars
+        shell: bash
+        run: |
+          echo "os=$(go run test/get-os.go)" >> "$GITHUB_OUTPUT"
+          echo "arch=$(go env GOARCH)" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        env:
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: ${{ matrix.cgo }}
+        shell: bash
+        run: ./build.sh -v ${{ github.ref_name }} -b ${{ github.run_number }} -n cola -l "Command Launcher" -o build/cola_${{ steps.vars.outputs.os }}_${{ matrix.arch }}_${{ github.sha }}
+
+      - name: Unit tests
+        run: go test -v ./...
+
+      - name: CLI black-box tests
+        run: go test -tags=e2e -count=1 -v ./test/e2e
+
+      - name: Remote HTTPS smoke test for native release binary
+        if: inputs.release && matrix.arch == steps.vars.outputs.arch
+        env:
+          COMMAND_LAUNCHER_E2E_BINARY: ${{ github.workspace }}/build/cola_${{ steps.vars.outputs.os }}_${{ matrix.arch }}_${{ github.sha }}
+        run: go test -tags=e2e,remote -count=1 -run '^TestRemoteHTTPSRegistry$' -v ./test/e2e
+
+      - name: Integration test
+        env:
+          SCRIPT_DIR: ${{ github.workspace }}/test
+        run: test/integration.sh
+        shell: bash
+
+      - name: Documentation lint
+        working-directory: gh-pages
+        run: npm install && npm run test
+
+      - name: Upload release binary
+        if: ${{ inputs.release }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.vars.outputs.os }}-cola-${{ matrix.arch }}
+          path: build/cola_${{ steps.vars.outputs.os }}_${{ matrix.arch }}_${{ github.sha }}
+          if-no-files-found: error

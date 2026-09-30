@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+      - '*.*.*-*'
+      - 'test-release-*'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-test.yml
+    with:
+      release: true
+
+  packaging:
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download linux amd64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: linux-cola-amd64
+          path: output/linux/amd64/
+
+      - name: Download linux arm64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: linux-cola-arm64
+          path: output/linux/arm64/
+
+      - name: Download windows amd64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-cola-amd64
+          path: output/windows/amd64/
+
+      - name: Download windows arm64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-cola-arm64
+          path: output/windows/arm64/
+
+      - name: Download darwin amd64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: darwin-cola-amd64
+          path: output/darwin/amd64/
+
+      - name: Download darwin arm64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: darwin-cola-arm64
+          path: output/darwin/arm64/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          cp output/darwin/arm64/cola_darwin_arm64_${{ github.sha }} release/cola_darwin_arm64_${{ github.ref_name }}
+          cp output/darwin/amd64/cola_darwin_amd64_${{ github.sha }} release/cola_darwin_amd64_${{ github.ref_name }}
+          cp output/linux/amd64/cola_linux_amd64_${{ github.sha }} release/cola_linux_amd64_${{ github.ref_name }}
+          cp output/linux/arm64/cola_linux_arm64_${{ github.sha }} release/cola_linux_arm64_${{ github.ref_name }}
+          cp output/windows/amd64/cola_windows_amd64_${{ github.sha }} release/cola_windows_amd64_${{ github.ref_name }}.exe
+          cp output/windows/arm64/cola_windows_arm64_${{ github.sha }} release/cola_windows_arm64_${{ github.ref_name }}.exe
+          mv output/darwin/arm64/cola_darwin_arm64_${{ github.sha }} output/darwin/arm64/cola
+          mv output/darwin/amd64/cola_darwin_amd64_${{ github.sha }} output/darwin/amd64/cola
+          mv output/linux/amd64/cola_linux_amd64_${{ github.sha }} output/linux/amd64/cola
+          mv output/linux/arm64/cola_linux_arm64_${{ github.sha }} output/linux/arm64/cola
+          mv output/windows/amd64/cola_windows_amd64_${{ github.sha }} output/windows/amd64/cola.exe
+          mv output/windows/arm64/cola_windows_arm64_${{ github.sha }} output/windows/arm64/cola.exe
+
+      - name: Zip the package
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: zip
+          filename: cola_${{ github.ref_name }}.zip
+          directory: output
+
+      - name: Collect combined package
+        run: mv output/cola_${{ github.ref_name }}.zip release/
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets
+          path: release/
+          if-no-files-found: error
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: output
+
+  update-latest-version:
+    needs: [packaging]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Generate latest version file
+        run: |
+          mkdir output
+          cat release-notes.yaml | yq -r '."${{ github.ref_name }}"' > output/latest.yaml
+
+      - name: Display latest version file content
+        run: cat output/latest.yaml
+
+      - name: Upload latest version index
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest.yaml
+          path: output/latest.yaml
+
+  publish-release:
+    needs: [packaging, update-latest-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v8
+        with:
+          name: release-assets
+          path: release/
+
+      - name: Download latest version index
+        uses: actions/download-artifact@v8
+        with:
+          name: latest.yaml
+          path: release/
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: release/*

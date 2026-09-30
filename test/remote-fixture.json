@@ -1,0 +1,5 @@
+{
+  "default_repository": "jdevera/command-launcher",
+  "tag": "1.16.0",
+  "registry_path": "examples/remote-repo"
+}

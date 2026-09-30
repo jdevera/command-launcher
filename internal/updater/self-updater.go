@@ -8,10 +8,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/inconshreveable/go-update"
 	"github.com/jdevera/command-launcher/internal/console"
 	"github.com/jdevera/command-launcher/internal/helper"
 	"github.com/jdevera/command-launcher/internal/user"
-	"github.com/inconshreveable/go-update"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -110,7 +110,7 @@ func (u *SelfUpdater) checkSelfUpdate() <-chan bool {
 
 func (u *SelfUpdater) doSelfUpdate(url string) error {
 	log.Debugf("Update %s version %s from %s", u.BinaryName, u.latestVersion.Version, url)
-	resp, err := helper.HttpGetWrapper(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("cannot download the new version from %s: %v", url, err)
 	}

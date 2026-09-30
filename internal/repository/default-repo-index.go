@@ -32,7 +32,7 @@ const (
 
 type defaultRepoIndex struct {
 	id             string
-	repoDir        string                     // the repository directory
+	repoDir        string // the repository directory
 	packages       map[string]command.PackageManifest
 	packageDirs    map[string]string          // key is the package name, value is the package directory
 	groupCmds      map[string]command.Command // key is in form of [repo]>[package]>[group]>[cmd name]

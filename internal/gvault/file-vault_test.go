@@ -5,69 +5,63 @@ import (
 	"testing"
 
 	"github.com/jdevera/command-launcher/internal/context"
+	"github.com/stretchr/testify/require"
 )
 
+var testContext context.LauncherContext
+
 func init() {
-	context.InitContext("testvault", "1.0.0", "1")
+	testContext = context.InitContext("testvault", "1.0.0", "1")
 }
 
-const vaultSecretEnv = "TESTVAULT_VAULT_SECRET"
+func isolateVault(t *testing.T) {
+	t.Helper()
+
+	home := t.TempDir()
+	t.Setenv(testContext.AppHomeEnvVar(), home)
+	t.Setenv(testContext.VaultSecretEnvVar(), "very_secret")
+
+	// CreateVault checks the legacy user-home path before initializing a new
+	// vault. Keep that migration lookup inside the test directory too.
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+}
 
 func TestVault_Init(t *testing.T) {
-	t.Setenv(vaultSecretEnv, "very_secret")
+	isolateVault(t)
 
 	_, err := CreateVault("unit-test")
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestVault_WriteRead(t *testing.T) {
-	t.Setenv(vaultSecretEnv, "very_secret")
+	isolateVault(t)
 
 	fv, err := CreateVault("unit-test")
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	err = fv.Write("mykey", "myvalue")
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	val, err := fv.Read("mykey")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if val != "myvalue" {
-		t.Errorf("wrong value")
-	}
+	require.NoError(t, err)
+	require.Equal(t, "myvalue", val)
 }
 
 func TestVault_MultiWriteRead(t *testing.T) {
-	t.Setenv(vaultSecretEnv, "very_secret")
+	isolateVault(t)
 
 	fv, err := CreateVault("unit-test")
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	for i := 0; i < 1000; i++ {
 		err = fv.Write(fmt.Sprintf("mykey-%d", i), fmt.Sprintf("myvalue-%d", i))
-		if err != nil {
-			t.Error(err)
-		}
+		require.NoError(t, err)
 	}
 
 	for i := 0; i < 1000; i++ {
 		val, err := fv.Read(fmt.Sprintf("mykey-%d", i))
-		if err != nil {
-			t.Error(err)
-		}
-
-		if val != fmt.Sprintf("myvalue-%d", i) {
-			t.Errorf("wrong value")
-		}
+		require.NoError(t, err)
+		require.Equal(t, fmt.Sprintf("myvalue-%d", i), val)
 	}
 }
